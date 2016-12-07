@@ -4,17 +4,25 @@ use std::fs::File;
 
 fn main() {
     let lines = read_file();
-    let mut abba_count = 0;
+    let mut ssl_count = 0;
     for line in lines {
         let mut in_squares = false;
-        let mut char_buffer = [' '; 4];
+        let mut char_buffer = [' '; 3];
+
+        let mut abas = Vec::new();
+        let mut babs = Vec::new();
 
         let mut chars = line.chars();
         char_buffer[0] = chars.next().unwrap();
         char_buffer[1] = chars.next().unwrap();
         char_buffer[2] = chars.next().unwrap();
-        char_buffer[3] = chars.next().unwrap();
-        let mut abba_found = is_abba(char_buffer);
+        if is_aba(char_buffer) {
+            if in_squares {
+                babs.push(char_buffer);
+            } else {
+                abas.push(char_buffer);
+            }
+        }
         
         for c in chars {
             match c {
@@ -24,24 +32,34 @@ fn main() {
             }
             char_buffer[0] = char_buffer[1];
             char_buffer[1] = char_buffer[2];
-            char_buffer[2] = char_buffer[3];
-            char_buffer[3] = c;
+            char_buffer[2] = c;
 
-            if is_abba(char_buffer) {
+            if is_aba(char_buffer) {
                 if in_squares {
-                    abba_found = false;
-                    break;
+                    babs.push(char_buffer);
                 } else {
-                    abba_found = true;
+                    abas.push(char_buffer);
                 }
             }
         }
 
-        if abba_found {
-            abba_count += 1;
+        //println!("ABA {:?}", abas);
+        //println!("BAB {:?}", babs);
+        
+        let mut is_ssl = false;
+        for aba in &abas {
+            for bab in &babs {
+                is_ssl = is_ssl || correspond(aba.clone(), bab.clone());
+            }
+        }
+        
+        //println!("Is SSL? {}", is_ssl);
+        
+        if is_ssl {
+            ssl_count += 1;
         }
     }
-    println!("ABBA_count: {}", abba_count);
+    println!("SSL_count: {}", ssl_count);
 }
 
 fn read_file() -> Vec<String> {
@@ -60,4 +78,18 @@ fn is_abba(char_buffer: [char; 4]) -> bool {
         char_buffer[1] != ']' &&
         char_buffer[0] != '[' &&
         char_buffer[1] != '['
+}
+
+fn is_aba(char_buffer: [char; 3]) -> bool {
+    char_buffer[0] != char_buffer[1] &&
+    char_buffer[0] == char_buffer[2] &&
+        char_buffer[0] != ']' &&
+        char_buffer[1] != ']' &&
+        char_buffer[0] != '[' &&
+        char_buffer[1] != '['
+}
+
+fn correspond(aba: [char; 3], bab: [char; 3]) -> bool {
+    //assumes both follow the aba pattern, so [0] == [2]
+    aba[0] == bab[1] && aba[1] == bab[0]
 }
