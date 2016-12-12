@@ -24,30 +24,37 @@ impl Instruction {
         let jnz_lit = Regex::new(r"jnz ([-\d]+) ([-\d]+)").unwrap();
         let jnz_reg = Regex::new(r"jnz (a|b|c|d) ([-\d]+)").unwrap();
 
-        if cpy_lit.is_match(line) {
-            let cap = cpy_lit.captures(line).unwrap();
+        let cpy_lit_match = cpy_lit.captures(line);
+        let cpy_reg_match = cpy_reg.captures(line);
+        let inc_match = inc.captures(line);
+        let dec_match = dec.captures(line);
+        let jnz_lit_match = jnz_lit.captures(line);
+        let jnz_reg_match = jnz_reg.captures(line);
+        
+        if cpy_lit_match.is_some() {
+            let cap = cpy_lit_match.unwrap();
             let src: i32 = cap.at(1).unwrap().parse().unwrap();
             let dest = to_register_index(cap.at(2).unwrap());
             Instruction::CpyLit(src, dest)
         }
-        else if cpy_reg.is_match(line) {
-            let cap = cpy_reg.captures(line).unwrap();
+        else if cpy_reg_match.is_some() {
+            let cap = cpy_reg_match.unwrap();
             let src = to_register_index(cap.at(1).unwrap());
             let dest = to_register_index(cap.at(2).unwrap());
             Instruction::CpyReg(src, dest)
         }
-        else if inc.is_match(line) {
-            let cap = inc.captures(line).unwrap();
+        else if inc_match.is_some() {
+            let cap = inc_match.unwrap();
             let dest = to_register_index(cap.at(1).unwrap());
             Instruction::Inc(dest)
         }
-        else if dec.is_match(line) {
-            let cap = dec.captures(line).unwrap();
+        else if dec_match.is_some() {
+            let cap = dec_match.unwrap();
             let dest = to_register_index(cap.at(1).unwrap());
             Instruction::Dec(dest)
         }
-        else if jnz_lit.is_match(line) {
-            let cap = jnz_lit.captures(line).unwrap();
+        else if jnz_lit_match.is_some() {
+            let cap = jnz_lit_match.unwrap();
             let condition: i32 = cap.at(1).unwrap().parse().unwrap();
             let offset: i32 = cap.at(2).unwrap().parse().unwrap();
             if condition != 0 {
@@ -57,8 +64,8 @@ impl Instruction {
                 Instruction::Noop
             }
         }
-        else if jnz_reg.is_match(line) {
-            let cap = jnz_reg.captures(line).unwrap();
+        else if jnz_reg_match.is_some() {
+            let cap = jnz_reg_match.unwrap();
             let condition = to_register_index(cap.at(1).unwrap());
             let offset: i32 = cap.at(2).unwrap().parse().unwrap();
             Instruction::Jnz(condition, offset)
