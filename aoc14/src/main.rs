@@ -1,19 +1,23 @@
 extern crate md5;
 
+use std::collections::HashMap;
+
 fn main() {
 //    let input = "abc";
     let input = "yjdafjpo";
     let mut index = 0;
     let mut results_found = 0;
+
+    let mut hash_memo = HashMap::new();
     while results_found < 64 {
-        let hash = stretched_hash(format!("{}{}", input, index));
+        let hash = stretched_hash(format!("{}{}", input, index), &mut hash_memo);
         
         let threes = find_concurrent_symbols(&hash, 3, true);
         if threes.len() > 0 {
 //            println!("Found three at {} -> {}", index, hash);
             for i in 1..1001 {
-                let hash = stretched_hash(format!("{}{}", input, index+i));
-                let fives = find_concurrent_symbols(&hash, 5, true);
+                let hash = stretched_hash(format!("{}{}", input, index+i), &mut hash_memo);
+                let fives = find_concurrent_symbols(&hash, 5, false);
                 if fives.iter().any(|c| threes.contains(c)) {
                     results_found += 1;
 //                    println!("Five found at {} -> {}", index+i, hash);
@@ -54,7 +58,6 @@ fn find_concurrent_symbols(hash: &String, count: u8, exit_early: bool) -> Vec<ch
     matches
 }
 
-
 fn hash_to_string(hash: &[u8; 16]) -> String {
     let mut result = String::with_capacity(32);
     
@@ -64,12 +67,14 @@ fn hash_to_string(hash: &[u8; 16]) -> String {
     result
 }
 
-fn stretched_hash(input: String) -> String {
-    let mut result = input;
-    for _ in 0..2017 {
-        result = string_hash(result);
-    }
-    result
+fn stretched_hash(input: String, memo: &mut HashMap<String, String>) -> String {
+    memo.entry(input.clone()).or_insert_with(|| {
+        let mut result = input;
+        for _ in 0..2017 {
+            result = string_hash(result);
+        }
+        result
+    }).clone()
 }
 
 fn string_hash(input: String) -> String {
