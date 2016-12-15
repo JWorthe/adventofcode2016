@@ -1,0 +1,7 @@
+[package]
+name = "aoc15"
+version = "0.1.0"
+authors = ["Justin Worthe <justin.worthe@entelect.co.za>"]
+
+[dependencies]
+regex = "0.1"
