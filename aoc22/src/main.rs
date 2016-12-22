@@ -76,38 +76,24 @@ impl Grid {
             next_col.push(node);
         }
         grid_nodes.push(next_col);
-
-        for x in 0..grid_nodes.len() {
-            for y in 0..grid_nodes[x].len() {
-                let mut is_blocker = true;
-                if x > 0 && grid_nodes[x-1][y].size >= grid_nodes[x][y].used {
-                    is_blocker = false;
-                }
-                if x < grid_nodes.len()-1 && grid_nodes[x+1][y].size >= grid_nodes[x][y].used {
-                    is_blocker = false;
-                }
-                if y > 0 && grid_nodes[x][y-1].size >= grid_nodes[x][y].used {
-                    is_blocker = false;
-                }
-                if y < grid_nodes[x].len()-1 && grid_nodes[x][y+1].size >= grid_nodes[x][y].used {
-                    is_blocker = false;
-                }
-                grid_nodes[x][y].blocker = is_blocker;
-            }
-        }
-        for x in 0..grid_nodes.len() {
-            for y in 0..grid_nodes[x].len() {
-                grid_nodes[x][y].size = if grid_nodes[x][y].blocker { 2 } else { 1 };
-                grid_nodes[x][y].used = if grid_nodes[x][y].used > 0 { grid_nodes[x][y].size } else { 0 };
-                grid_nodes[x][y].avail = grid_nodes[x][y].size - grid_nodes[x][y].used;
-            }
-        }
+        grid_nodes = Grid::normalize(grid_nodes);
 
         Grid {
             nodes: grid_nodes,
             goal_x: current_x,
             goal_y: 0
         }
+    }
+
+    fn normalize(mut nodes: Vec<Vec<Node>>) -> Vec<Vec<Node>> {
+        for x in 0..nodes.len() {
+            for y in 0..nodes[x].len() {
+                nodes[x][y].size = ((nodes[x][y].size + 50)/100) * 100;
+                nodes[x][y].used = ((nodes[x][y].used + 50)/100) * 100;
+                nodes[x][y].avail = ((nodes[x][y].avail + 50)/100) * 100;
+            }
+        }
+        nodes
     }
 
     fn is_final(&self) -> bool {
